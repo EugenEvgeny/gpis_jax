@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jax-gp-gpis-refactor"
+version = "0.3.0"
+description = "Exact JAX Gaussian processes, derivative-constrained GPIS, and geometric priors"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "jax>=0.4.30",
+    "numpy>=1.23",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+# The default installation uses the normal JAX CPU wheels. On a supported
+# NVIDIA/Linux system, selecting *one* CUDA extra installs JAX's matching CUDA
+# plugin, PJRT runtime, and CUDA/cuDNN pip wheels. An NVIDIA driver is required.
+cuda12 = ["jax[cuda12]>=0.4.30"]
+cuda13 = ["jax[cuda13]>=0.4.30"]
+# Use the -local extras ONLY when your CUDA and cuDNN installations are managed
+# externally (e.g. by an HPC cluster). Most users should use cuda12/cuda13.
+cuda12-local = ["jax[cuda12-local]>=0.4.30"]
+cuda13-local = ["jax[cuda13-local]>=0.4.30"]
+dev = ["pytest>=7"]
+visualization = ["matplotlib>=3.7", "scikit-image>=0.22", "plotly>=5", "open3d>=0.18"]
+registration = ["jaxlie>=1.2"]
+
+[project.scripts]
+gp-jax-device = "gaussian_process.device:main"
+
+[tool.uv]
+# uv resolves every extra into the lockfile, even extras that are not installed.
+# Separate CUDA variants must not be combined in one environment.
+conflicts = [[
+    { extra = "cuda12" },
+    { extra = "cuda13" },
+    { extra = "cuda12-local" },
+    { extra = "cuda13-local" },
+]]
+
+[tool.setuptools]
+packages = ["gaussian_process", "kernels", "geometric_priors", "geometric_priors.legacy"]
+py-modules = ["GP", "GPIS"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
